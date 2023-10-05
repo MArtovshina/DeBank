@@ -1,92 +1,62 @@
-import json
+import os
 import time
-from utils import pre_request
-from request import DebankAPI
-
-cinf = {
-    'has_web3_id': False,
-    'my_age_days': 600,
-    'my_net_worth': 101,
-    'my_tvf': 120,
-    'my_follower_count': 2,
-    'my_ranking': 280000
-}
-
-default_permissions = {
-    "has_web3_id": False,
-    "min_age_days": 0,
-    "min_net_worth": 0,
-    "min_tvf": 0,
-    "min_follower_count": 0,
-    "min_ranking": 1000000000
-
-}
+import pickle
+import threading
+from debank_request import Debank
 
 
-def complete_task(profile):
-    with open("draw_data.json", "r") as file:
-        draw = json.load(file)
-
-    for line in draw:
-        permissions = line["draw_permissions"]
-
-        if 'has_web3_id' in permissions:
-            permissions["has_web3_id"] = True
-        else:
-            permissions["has_web3_id"] = False
-
-        for key, value in default_permissions.items():
-            if key not in permissions:
-                permissions[key] = value
-
-        if cinf["has_web3_id"] == permissions["has_web3_id"] and \
-                cinf["my_age_days"] >= permissions["min_age_days"] and \
-                cinf["my_net_worth"] >= permissions["min_net_worth"] and \
-                cinf["my_tvf"] >= permissions["min_tvf"] and \
-                cinf["my_follower_count"] >= permissions["min_follower_count"] and \
-                cinf["my_ranking"] <= permissions["min_ranking"]:
-
-            print(f"Начал подписку на {line['draw_creator_id']}")
-            pre_request()
-            profile.follow(line["draw_creator_id"])
-            time.sleep(10)
-
-            print("Начал выполнение задание")
-            pre_request()
-            stat = profile.draw_join(line["draw_id"])
-
-            if stat == "You've hit your 24-hour join Lucky draw limit based on your Web3 Social Ranking":
-                print("Дневной лимит исчерпан")
-                break
-            if stat == "user has joined":
-                print("Уже участвует")
-
-            time.sleep(10)
-
-
-def check_followers(profile, my_id):
-    pre_request()
-    print("Проверка количества подписок")
-    following_list = profile.get_following_list(my_id)
-    print(f"Количество подписок {len(following_list)}")
-    if len(following_list) >= 90:
-        for i in following_list:
-            pre_request()
-            profile.unfollow(i)
-            time.sleep(5)
+def process_account(account_obj):
+    print(f"Начал выполнять {account_obj._my_id}")
+    account_obj.start()
+    with open(f"accs/{account_obj._my_id}.pkl", "wb") as fp:
+        pickle.dump(account_obj, fp)
 
 
 def main():
-    # Сделать чтение из общей папки аккаунтов
-    my_id = "0x41e4db5bee80d0dd6b44b6d80d3cac212583bff7"
-    # сделать чтение из файла с параметрами
-    account = '{"random_at":1685829887,"random_id":"f8c4750aa04f4db9a703abe33e310792","session_id":"531c88033bbd4d13b85a27b7703500c5","user_addr":"0x41e4db5bee80d0dd6b44b6d80d3cac212583bff7","wallet_type":"metamask","is_verified":true}'
+    accounts = []
 
-    profile = DebankAPI(account)
+    with open('accs.txt', 'r') as file:
+        lines = file.readlines()
 
-    check_followers(profile, my_id)
-    complete_task(profile)
+    for line in lines:
+        my_id, account = line.strip().split(';')
+        account_file = f"{my_id}.pkl"
+
+        if os.path.exists(f"accs/{account_file}"):
+            print(f"Загрузил аккаунт: {my_id}")
+            with open(f"accs/{account_file}", 'rb') as f:
+                account_obj = pickle.load(f)
+        else:
+            print(f"Cоздал новый аккаунт {my_id}")
+            account_obj = Debank(my_id, account)
+
+        accounts.append(account_obj)
+
+    while True:
+        threads = []
+        current_time = time.time()
+        for account_obj in accounts:
+            if current_time - account_obj.last_join_limit >= 24 * 3600:
+                thread = threading.Thread(target=process_account, args=(account_obj,))
+                threads.append(thread)
+                thread.start()
+
+            for thread in threads:
+                thread.join()
+
+        time.sleep(600)
 
 
 if __name__ == '__main__':
     main()
+
+
+# while True:
+#     current_time = time.time()
+#     for account_obj in accounts:
+#         if current_time - account_obj.last_join_limit >= 24 * 3600:
+#             print(f"Начал выполнять {account_obj._my_id}")
+#             account_obj.start()
+#             with open(f"accs/{account_obj._my_id}.pkl", "wb") as fp:
+#                 pickle.dump(account_obj, fp)
+#     time.sleep(300)

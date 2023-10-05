@@ -3,32 +3,12 @@ import json
 import time
 
 import requests
+import constants as const
+from utils import pre_request
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from fake_useragent import UserAgent
-
-headers = {
-    'authority': 'api.debank.com',
-    'accept': '*/*',
-    'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
-    'content-type': 'application/json',
-    'origin': 'https://debank.com',
-    'referer': 'https://debank.com/',
-    'user-agent': UserAgent().chrome,
-    "x-api-ts": "1696466328",
-    "x-api-nonce": "n_FlctTlTnrpnMtsGIuqiiUzAwnUhOpbP6qLv6HuEf",
-    "x-api-sign": "e59d1c7ade8211a07daac25bfd3f8a9951748c477cda22f91c733855f750e389",
-    "x-api-ver": "v2",
-}
-
-headers_2 = {
-    "x-api-ts": "1696462606",
-    "x-api-nonce": "n_6m7Q0geHdDF7zlWFG17TegKRCfgkKe7okmonz4lV",
-    "x-api-sign": "6346053bf96d7519c3075d56424f439404cd17a82e3706ca6d4bce2767ce8097",
-    "x-api-ver": "v2",
-}
 
 
 def reload_test():
@@ -39,12 +19,8 @@ def reload_test():
 
 
 def parse():
-    url = "https://api.debank.com/feed/suggested_mentions?q=draw"
-
-    requests.get(url, headers=headers_2)
-
-    url = "https://api.debank.com/feed/search?q=draw&start=0&limit=100&order_by=-create_at"
-    response = requests.get(url, headers=headers)
+    pre_request()
+    response = requests.get(const.PARSE_URL, headers=const.PARSE_HEADERS)
 
     if response.status_code == 429:
         print("Превышен лимит запросов")
@@ -118,7 +94,7 @@ def main():
         result = parse()
         if result is False:
             reload_test()
-        time.sleep(10) if result is None else None
+        time.sleep(1800) if result is None else None
 
 
 if __name__ == '__main__':
