@@ -1,5 +1,6 @@
 import json
 import time
+from utils import pre_request
 from request import DebankAPI
 
 cinf = {
@@ -46,21 +47,33 @@ def complete_task(profile):
                 cinf["my_ranking"] <= permissions["min_ranking"]:
 
             print(f"Начал подписку на {line['draw_creator_id']}")
+            pre_request()
             profile.follow(line["draw_creator_id"])
-            time.sleep(60)
+            time.sleep(10)
 
             print("Начал выполнение задание")
+            pre_request()
             stat = profile.draw_join(line["draw_id"])
 
             if stat == "You've hit your 24-hour join Lucky draw limit based on your Web3 Social Ranking":
                 print("Дневной лимит исчерпан")
                 break
-            if stat != "user has joined":
-                print("Принял участие")
-            else:
+            if stat == "user has joined":
                 print("Уже участвует")
 
-            time.sleep(60)
+            time.sleep(10)
+
+
+def check_followers(profile, my_id):
+    pre_request()
+    print("Проверка количества подписок")
+    following_list = profile.get_following_list(my_id)
+    print(f"Количество подписок {len(following_list)}")
+    if len(following_list) >= 90:
+        for i in following_list:
+            pre_request()
+            profile.unfollow(i)
+            time.sleep(5)
 
 
 def main():
@@ -70,6 +83,8 @@ def main():
     account = '{"random_at":1685829887,"random_id":"f8c4750aa04f4db9a703abe33e310792","session_id":"531c88033bbd4d13b85a27b7703500c5","user_addr":"0x41e4db5bee80d0dd6b44b6d80d3cac212583bff7","wallet_type":"metamask","is_verified":true}'
 
     profile = DebankAPI(account)
+
+    check_followers(profile, my_id)
     complete_task(profile)
 
 
