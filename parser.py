@@ -4,18 +4,7 @@ import time
 
 import requests
 import constants as const
-from utils import pre_request
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as ec
-
-
-def reload_test():
-    browser = webdriver.Chrome()
-    browser.get('https://debank.com/stream?tab=hot')
-    WebDriverWait(browser, 500).until(ec.element_to_be_clickable((By.XPATH, "//*[@data-mode=\"search\"]")))
-    browser.quit()
+from utils import pre_request, get_new_headers
 
 
 def parse():
@@ -80,7 +69,7 @@ def parse():
     # Удаление закончившихся
     for i in range(0, len(unique_list)):
         try:
-            if unique_list[i]["draw_end"] < time.time():
+            if unique_list[i]["draw_end"] < time.time() or type(unique_list[i]['draw_creator_id']) == int:
                 unique_list.remove(unique_list[i])
         except IndexError:
             break
@@ -93,9 +82,11 @@ def main():
     while True:
         result = parse()
         if result is False:
-            reload_test()
+            get_new_headers()
         time.sleep(1800) if result is None else None
 
 
-if __name__ == '__main__':
-    main()
+get_new_headers()
+
+# if __name__ == '__main__':
+#     main()

@@ -68,5 +68,41 @@
 #
 #         print(f"Конец: {time.strftime('%d.%m.%Y %H:%M', time.localtime(float(draw['finish_at'])))}")
 #         print("-" * 20)
+import json
+import random
+import time
 
+
+# from seleniumwire import webdriver
+# driver = webdriver.Chrome()
+#
+# # Go to the Google home page
+# driver.get('https://debank.com/stream?q=draw&tab=search')
+#
+# # Access requests via the `requests` attribute
+# for request in driver.requests:
+#     if request.url == "https://api.debank.com/feed/suggested_tags?q=draw":
+#         x_api_sign = request.headers["x-api-sign"]
+#         x_api_nonce = request.headers["x-api-nonce"]
+#         x_api_ts = request.headers["x-api-ts"]
+
+# with open("draw_data.json", "r") as file:
+#     draw = json.load(file)
+#
+# for line in draw:
+#     if type(line['draw_creator_id']) == int:
+#         print(line['draw_creator_id'])
+
+# with open("draw_data.json", "r") as file:
+#     draw = json.load(file)
+#
+# for line in draw:
+#     permissions = line["draw_permissions"]
+#
+#     permissions["has_web3_id"] = 'has_web3_id' in permissions
+#
+#     print(permissions)
+
+print(time.time())
+print(type(time.time()))
 

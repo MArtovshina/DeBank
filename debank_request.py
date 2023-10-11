@@ -3,7 +3,7 @@ import json
 import requests
 import constants as const
 from fake_useragent import UserAgent
-from utils import pre_request
+from utils import pre_request, get_new_headers
 
 
 class Debank:
@@ -62,6 +62,7 @@ class Debank:
         else:
             print("Уже подписан")
 
+
     def _unfollow(self, to_id=None):
         json_data = {
             'to_id': to_id,
@@ -110,7 +111,7 @@ class Debank:
         params = {
             'id': self._my_id,
         }
-
+        pre_request()
         response = requests.get('https://api.debank.com/user/l2_account', headers=self._headers, params=params)
 
         if response.status_code == 200:
@@ -122,11 +123,11 @@ class Debank:
         print("Проверка количества подписок")
         following_list = self._get_following_list()
         print(f"Количество подписок {len(following_list)}")
-        if len(following_list) >= 90:
+        if len(following_list) >= 70:
             for i in following_list:
                 pre_request()
                 self._unfollow(i)
-                time.sleep(5)
+                time.sleep(1)
 
     def complete_join(self):
 
@@ -136,16 +137,13 @@ class Debank:
         for line in draw:
             permissions = line["draw_permissions"]
 
-            if 'has_web3_id' in permissions:
-                permissions["has_web3_id"] = True
-            else:
-                permissions["has_web3_id"] = False
+            permissions["has_web3_id"] = 'has_web3_id' in permissions
 
             for key, value in const.DEFAULT_PERMISSIONS.items():
                 if key not in permissions:
                     permissions[key] = value
 
-            if self._CINF["has_web3_id"] == permissions["has_web3_id"] and \
+            if self._CINF["has_web3_id"] >= permissions["has_web3_id"] and \
                     self._CINF["my_age_days"] >= permissions["min_age_days"] and \
                     self._CINF["my_net_worth"] >= permissions["min_net_worth"] and \
                     self._CINF["my_tvf"] >= permissions["min_tvf"] and \
@@ -155,7 +153,7 @@ class Debank:
                 print(f"Начал подписку на {line['draw_creator_id']}")
                 pre_request()
                 self._follow(line["draw_creator_id"])
-                time.sleep(5)
+                time.sleep(1)
 
                 print("Начал выполнение задания")
                 pre_request()
@@ -171,7 +169,7 @@ class Debank:
                 if stat == "user has joined":
                     print("Уже участвует")
 
-                time.sleep(5)
+                time.sleep(1)
 
     def start(self):
         self.get_cinf()

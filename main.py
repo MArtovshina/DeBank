@@ -2,6 +2,7 @@ import os
 import time
 import pickle
 import threading
+import parser
 from debank_request import Debank
 
 
@@ -12,7 +13,10 @@ def process_account(account_obj):
         pickle.dump(account_obj, fp)
 
 
-def main():
+def init():
+    pars = threading.Thread(target=parser.main, daemon=True)
+    pars.start()
+
     accounts = []
 
     with open('accs.txt', 'r') as file:
@@ -32,24 +36,53 @@ def main():
 
         accounts.append(account_obj)
 
+    return accounts
+
+
+def get_balance(accounts):
+    for account_obj in accounts:
+        account_obj.get_l2_balance()
+
+
+def jobs(accounts):
     while True:
-        threads = []
-        current_time = time.time()
-        for account_obj in accounts:
-            if current_time - account_obj.last_join_limit >= 24 * 3600:
-                thread = threading.Thread(target=process_account, args=(account_obj,))
-                threads.append(thread)
-                thread.start()
+        try:
+            threads = []
+            current_time = time.time()
 
-            for thread in threads:
-                thread.join()
+            for account_obj in accounts:
+                if current_time - account_obj.last_join_limit > 24 * 3600:
+                    thread = threading.Thread(target=process_account, args=(account_obj,))
+                    threads.append(thread)
+                    thread.start()
+                    thread.join()
 
-        time.sleep(600)
+            time.sleep(600)
+        except:
+            continue
+
+
+def main():
+    accounts = init()
+    while True:
+        try:
+            print("1. Запустить работу")
+            print("2. Получить баланс DeBank L2")
+            cmd = input("\nВыберите пункт: ")
+            if cmd == "1":
+                jobs(accounts)
+                os.system('cls||clear')
+            elif cmd == "2":
+                os.system('cls||clear')
+                get_balance(accounts)
+            else:
+                print("Вы ввели не правильное значение")
+        except KeyboardInterrupt:
+            continue
 
 
 if __name__ == '__main__':
     main()
-
 
 # while True:
 #     current_time = time.time()
