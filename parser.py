@@ -26,6 +26,7 @@ def parse():
     for item in response_json["data"]["feeds"]:
         draw = item["article"]["draw"]
         if draw:
+            draw_url = f"https://debank.com/stream/{item['article_id']}"
             draw_id = draw["id"]
             draw_creator_id = item["article"]["creator"]["id"]
             draw_start = draw["create_at"]
@@ -39,6 +40,7 @@ def parse():
             draw_end = draw["finish_at"]
 
             draw_entry = {
+                "draw_url": draw_url,
                 "draw_id": draw_id,
                 "draw_creator_id": draw_creator_id,
                 "draw_start": draw_start,
@@ -60,12 +62,6 @@ def parse():
             unique_list.append(item)
             seen_ids.add(item['draw_id'])
 
-    # Сортировка по наградам
-    for i in range(0, len(unique_list) - 1):
-        for j in range(0, len(unique_list) - 1):
-            if unique_list[j]["draw_prize_value"] < unique_list[j + 1]["draw_prize_value"]:
-                unique_list[j], unique_list[j + 1] = unique_list[j + 1], unique_list[j]
-
     # Удаление закончившихся
     for i in range(0, len(unique_list)):
         try:
@@ -73,6 +69,30 @@ def parse():
                 unique_list.remove(unique_list[i])
         except IndexError:
             break
+
+    # Удаление нулевых
+    for i in range(0, len(unique_list)):
+        try:
+            if unique_list[i]["draw_prize_value"] == 0:
+                unique_list.remove(unique_list[i])
+        except IndexError:
+            break
+
+    # Сортировка по наградам
+    for i in range(0, len(unique_list) - 1):
+        for j in range(0, len(unique_list) - 1):
+            if unique_list[j]["draw_prize_count"] < unique_list[j + 1]["draw_prize_count"]:
+                unique_list[j], unique_list[j + 1] = unique_list[j + 1], unique_list[j]
+    #
+    # # Сортировка по наградам
+    # for i in range(0, len(unique_list) - 1):
+    #     for j in range(0, len(unique_list) - 1):
+    #         if unique_list[j]["draw_prize_value"] < unique_list[j + 1]["draw_prize_value"]:
+    #             unique_list[j], unique_list[j + 1] = unique_list[j + 1], unique_list[j]
+
+
+
+
 
     with open("draw_data.json", "w") as json_file:
         json.dump(unique_list, json_file)
@@ -88,5 +108,5 @@ def main():
 
 get_new_headers()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

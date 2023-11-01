@@ -3,7 +3,7 @@ import json
 import requests
 import constants as const
 from fake_useragent import UserAgent
-from utils import pre_request, get_new_headers
+from utils import pre_request
 
 
 class Debank:
@@ -46,6 +46,8 @@ class Debank:
         self._CINF['my_tvf'] = resp_text["data"]["user"]["tvf"]
         self._CINF['my_follower_count'] = resp_text["data"]["user"]["follower_count"]
         self._CINF['my_ranking'] = resp_text["data"]["user"]["rank_at"]
+        if self._CINF['my_ranking'] is None:
+            self._CINF['my_ranking'] = 10000000
 
     def _follow(self, to_id=None):
         json_data = {
@@ -116,7 +118,10 @@ class Debank:
 
         if response.status_code == 200:
             balance = response.json()
-            print(f"Account: {balance['data']['id']}, balance: {balance['data']['balance']}")
+            if balance['data'].get("id") is None:
+                print(f"Account: {balance['data']['user_addr']}, balance: {balance['data']['balance']}")
+            else:
+                print(f"Account: {balance['data']['id']}, balance: {balance['data']['balance']}")
 
     def check_followers(self):
         pre_request()

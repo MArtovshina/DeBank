@@ -14,8 +14,8 @@ def process_account(account_obj):
 
 
 def init():
-    pars = threading.Thread(target=parser.main, daemon=True)
-    pars.start()
+    # pars = threading.Thread(target=parser.main, daemon=True)
+    # pars.start()
 
     accounts = []
 

@@ -68,9 +68,6 @@
 #
 #         print(f"Конец: {time.strftime('%d.%m.%Y %H:%M', time.localtime(float(draw['finish_at'])))}")
 #         print("-" * 20)
-import json
-import random
-import time
 
 
 # from seleniumwire import webdriver
@@ -103,6 +100,37 @@ import time
 #
 #     print(permissions)
 
-print(time.time())
-print(type(time.time()))
 
+# from selenium import webdriver
+# import time
+#
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.add_argument(r"--user-data-dir=C:\Users\Tim\AppData\Local\Chromium\User Data")
+# chrome_options.add_argument(r"--profile-directory=Default")
+#
+# browse_path = "C:/Users/Tim/Desktop/chromium-gost-118.0.5993.118/chrome.exe"
+# chrome_options.binary_location = browse_path
+#
+# driver = webdriver.Chrome(options=chrome_options)
+# driver.get("https://google.com")
+# time.sleep(100000)
+
+# from selenium import webdriver
+#
+# chrome_options = webdriver.ChromeOptions()
+# chrome_options.add_argument("--user-data-dir=C:/Полный/Путь/К/Папке/User Data")
+#
+# driver = webdriver.Chrome(options=chrome_options)
+
+
+test_list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+
+def ss(x):
+    if x / 2 == 0:
+        return x
+
+
+new_list = list(map(ss, test_list))
+
+print(new_list)

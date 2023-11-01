@@ -1,6 +1,7 @@
 from fake_useragent import UserAgent
 
 PARSE_URL = "https://api.debank.com/feed/search?q=draw&start=0&limit=100&order_by=-create_at"
+
 PARSE_HEADERS = {
     'authority': 'api.debank.com',
     'accept': '*/*',
